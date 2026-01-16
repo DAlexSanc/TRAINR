@@ -1,0 +1,14 @@
+{
+  "trainr": {
+    "resolution": 80,
+    "epochs": 1,
+    "patience": 1,
+    "batch_size": 16,
+    "dataset": "C:/Users/Alexs/Desktop/AI/Pi5/FirstPi5/dataset.yaml",
+    "output": "C:/Users/Alexs/Desktop/test",
+    "model": 0,
+    "auto_batch": true
+  }
+}
+
+

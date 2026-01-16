@@ -1,0 +1,29 @@
+# TRAINR large assets
+Models/
+models/
+*.pt
+*.onnx
+*.engine
+*.hef
+
+# Virtual environments
+venv/
+.env/
+.venv/
+.vscode/
+
+# Installer outputs
+dist/
+build/
+*.exe
+*.spec
+
+# Python
+__pycache__/
+*.pyc
+
+# OS junk
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
