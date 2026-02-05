@@ -61,11 +61,15 @@ class OrganizerWindow(QDialog):
         self.train_val_split_input.setValue(70)
         self.train_val_split_value_label = QLabel("70%")
         
+        self.task_label = QLabel("Vision Task:")
+        self.task_combobox = QComboBox()
+        self.task_combobox.addItems(["Detection", "Segmentation"])
 
         layout.addWidget(self.train_val_split_label, 2, 0, 1, 2)
         layout.addWidget(self.train_val_split_input, 2, 2, 1, 2)
         layout.addWidget(self.train_val_split_value_label, 2, 4)
-        
+        layout.addWidget(self.task_label, 3, 0)
+        layout.addWidget(self.task_combobox, 3, 1, 1, 3)
         frame.setLayout(layout)
         frame.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
         
@@ -114,6 +118,7 @@ class OrganizerWindow(QDialog):
         dataset_path = self.path_input.text().strip()
         output_path = self.output_input.text().strip()
         train_ratio = self.train_val_split_input.value() / 100.0
+        task_type = self.task_combobox.currentText().lower()
 
         if not dataset_path or not output_path:
             QMessageBox.warning(self, "Input Error", "Please provide both dataset and output folder paths.")
@@ -126,9 +131,11 @@ class OrganizerWindow(QDialog):
             self.organize_yolo_dataset,
             dataset_path,
             output_path,
-            train_ratio
+            train_ratio,
+            task_type
         )
 
+        # 🔥 THIS PART WAS MISSING
         self.worker.moveToThread(self.thread)
 
         self.thread.started.connect(self.worker.run)
@@ -141,12 +148,14 @@ class OrganizerWindow(QDialog):
 
         self.thread.start()
 
+
     def organize_yolo_dataset(
         self,
         parent_dir: str,
         output_dir: str,
         train_ratio: float = 0.8,
-        seed: int = 42
+        seed: int = 42,
+        task_type: str = "detection"   # NEW
     ):
         parent_dir = Path(parent_dir)
         output_dir = Path(output_dir) / "YOLO_Dataset"
@@ -166,64 +175,59 @@ class OrganizerWindow(QDialog):
         for d in [img_train, img_val, lbl_train, lbl_val]:
             d.mkdir(parents=True, exist_ok=True)
 
-        # Step 1: discover classes
-        classes = []
-
-        for d in parent_dir.iterdir():
-            if not d.is_dir():
-                continue
-
-            if d.name == "YOLO_Dataset":
-                continue
-
-            has_valid_sample = False
-
-            for root, _, files in os.walk(d):
-                for f in files:
-                    img_path = Path(root) / f
-                    if img_path.suffix.lower() not in IMAGE_EXTS:
-                        continue
-
-                    if img_path.with_suffix(".txt").exists() or img_path.with_suffix(".json").exists():
-                        has_valid_sample = True
-                        break
-
-                if has_valid_sample:
-                    break
-
-            if has_valid_sample:
-                classes.append(d.name)
-
-        classes.sort()
-        class_to_id = {name: idx for idx, name in enumerate(classes)}
+        # -------------------------------
+        # Step 1 + 2: Discover samples & classes robustly
+        # -------------------------------
 
         samples = []
+        classes_set = set()
 
-        # Step 2: collect image + label pairs
-        for class_name in classes:
-            class_dir = parent_dir / class_name
+        for root, _, files in os.walk(parent_dir):
+            root = Path(root)
 
-            for root, _, files in os.walk(class_dir):
-                root = Path(root)
+            for f in files:
+                img_path = root / f
+                if img_path.suffix.lower() not in IMAGE_EXTS:
+                    continue
 
-                for f in files:
-                    img_path = root / f
-                    if img_path.suffix.lower() not in IMAGE_EXTS:
+                label_json = img_path.with_suffix(".json")
+                label_txt = img_path.with_suffix(".txt")
+
+                label_path = None
+
+                if label_txt.exists():
+                    label_path = label_txt
+                elif label_json.exists():
+                    label_path = label_json
+
+                if not label_path:
+                    continue  # image without label → skip
+
+                # ---- Extract class names ----
+                if label_path.suffix == ".json":
+                    try:
+                        with open(label_path, "r", encoding="utf-8") as jf:
+                            data = json.load(jf)
+
+                        for shape in data.get("shapes", []):
+                            if "label" in shape:
+                                classes_set.add(shape["label"])
+                    except Exception:
                         continue
 
-                    label_json = img_path.with_suffix(".json")
-                    label_txt = img_path.with_suffix(".txt")
+                samples.append((img_path, label_path))
 
-                    if label_txt.exists():
-                        samples.append((img_path, label_txt))
-                    elif label_json.exists():
-                        samples.append((img_path, label_json))
-                    else:
-                        # No label → skip
-                        continue
+        # Fallback: if no classes found in JSON, use folder names
+        if not classes_set:
+            for img_path, _ in samples:
+                classes_set.add(img_path.parent.name)
+
+        classes = sorted(classes_set)
+        class_to_id = {name: idx for idx, name in enumerate(classes)}
 
         if not samples:
-            raise RuntimeError("No labeled samples found")
+            raise RuntimeError("No labeled image/json pairs found in dataset path.")
+
 
         # Step 3: shuffle & split
         random.shuffle(samples)
@@ -250,11 +254,14 @@ class OrganizerWindow(QDialog):
                         label_path,
                         lbl_dest,
                         class_to_id,
-                        img_path
+                        img_path,
+                        task_type   # NEW
                     )
 
+
+
         # Step 5: create data.yaml
-        self.create_data_yaml(output_dir, classes)
+        self.create_data_yaml(output_dir, classes, task_type)
 
         return {
             "num_classes": len(classes),
@@ -268,7 +275,8 @@ class OrganizerWindow(QDialog):
         labelme_json: Path,
         output_txt: Path,
         class_to_id: dict,
-        image_path: Path
+        image_path: Path,
+        task_type: str = "detection"
     ):
         with open(labelme_json, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -280,36 +288,52 @@ class OrganizerWindow(QDialog):
 
         for shape in data.get("shapes", []):
             label = shape["label"]
-
             if label not in class_to_id:
                 continue
 
             points = shape["points"]
-            xs = [p[0] for p in points]
-            ys = [p[1] for p in points]
-
-            xmin, xmax = min(xs), max(xs)
-            ymin, ymax = min(ys), max(ys)
-
-            # YOLO normalized format
-            x_center = ((xmin + xmax) / 2) / w
-            y_center = ((ymin + ymax) / 2) / h
-            box_w = (xmax - xmin) / w
-            box_h = (ymax - ymin) / h
-
             cls_id = class_to_id[label]
 
-            lines.append(f"{cls_id} {x_center:.6f} {y_center:.6f} {box_w:.6f} {box_h:.6f}")
+            # ---------------- DETECTION ----------------
+            if task_type == "detection":
+                xs = [p[0] for p in points]
+                ys = [p[1] for p in points]
+
+                xmin, xmax = min(xs), max(xs)
+                ymin, ymax = min(ys), max(ys)
+
+                x_center = ((xmin + xmax) / 2) / w
+                y_center = ((ymin + ymax) / 2) / h
+                box_w = (xmax - xmin) / w
+                box_h = (ymax - ymin) / h
+
+                lines.append(f"{cls_id} {x_center:.6f} {y_center:.6f} {box_w:.6f} {box_h:.6f}")
+
+            # ---------------- SEGMENTATION ----------------
+            elif task_type == "segmentation":
+                norm_points = []
+                for x, y in points:
+                    norm_points.append(f"{x/w:.6f}")
+                    norm_points.append(f"{y/h:.6f}")
+
+                if len(norm_points) < 6:  # less than 3 points
+                    continue
+
+                line = f"{cls_id} " + " ".join(norm_points)
+                lines.append(line)
 
         output_txt.write_text("\n".join(lines))
+
         
-    def create_data_yaml(self, output_dir: Path, classes: list):
+    def create_data_yaml(self, output_dir: Path, classes: list, task_type: str):
         yaml_path = output_dir / "dataset.yaml"
 
         lines = [
             f"path: {output_dir.resolve()}",
             "train: images/train",
             "val: images/val",
+            "",
+            f"task: {task_type}",   # NEW (Ultralytics auto-detect helper)
             "",
             "names:"
         ]
@@ -342,12 +366,13 @@ class OrganizerWorker(QObject):
     finished = Signal(dict)
     error = Signal(str)
 
-    def __init__(self, organizer_fn, parent_dir, output_dir, train_ratio):
+    def __init__(self, organizer_fn, parent_dir, output_dir, train_ratio, task_type):
         super().__init__()
         self.organizer_fn = organizer_fn
         self.parent_dir = parent_dir
         self.output_dir = output_dir
         self.train_ratio = train_ratio
+        self.task_type = task_type
 
     def run(self):
         try:
@@ -355,7 +380,8 @@ class OrganizerWorker(QObject):
                 parent_dir=self.parent_dir,
                 output_dir=self.output_dir,
                 train_ratio=self.train_ratio,
-                seed=42
+                seed=42,
+                task_type=self.task_type   # NEW
             )
             self.finished.emit(result)
         except Exception as e:

@@ -67,7 +67,7 @@ class MainWindow(QMainWindow):
         self.model_label = QLabel("Model Size to train:")
         self.model_combobox = QComboBox()
         self.model_combobox.addItems(
-            ["DetectionN", "DetectionS", "DetectionM", "DetectionL", "DetectionX"]
+            ["DetectionN", "DetectionS", "DetectionM", "DetectionL", "DetectionX", "SegmentationN", "SegmentationS", "SegmentationM", "SegmentationL", "SegmentationX"]
         )
 
         # Training params
@@ -323,7 +323,13 @@ class MainWindow(QMainWindow):
             2: "yolov8m.pt",
             3: "yolov8l.pt",
             4: "yolov8x.pt",
+            5: "yolov8n-seg.pt",
+            6: "yolov8s-seg.pt",
+            7: "yolov8m-seg.pt",
+            8: "yolov8l-seg.pt",
+            9: "yolov8x-seg.pt",
         }
+
 
         model = model_map[self.model_combobox.currentIndex()]
         imgsz = self.resolution_spinbox.value()
@@ -331,7 +337,7 @@ class MainWindow(QMainWindow):
         patience = self.patience_spinbox.value()
 
         if self.auto_batch_checkbox.isChecked():
-            batch = "-1"
+            batch = -1
         else:
             batch = str(self.batch_spinbox.value())
 

@@ -1,14 +1,12 @@
 {
   "trainr": {
-    "resolution": 80,
-    "epochs": 1,
-    "patience": 1,
+    "resolution": 640,
+    "epochs": 150,
+    "patience": 30,
     "batch_size": 16,
-    "dataset": "C:/Users/Alexs/Desktop/AI/Pi5/FirstPi5/dataset.yaml",
-    "output": "C:/Users/Alexs/Desktop/test",
-    "model": 0,
+    "dataset": "D:/SWT_Dataset/YOLO_Dataset/dataset.yaml",
+    "output": "D:/SWT_Dataset",
+    "model": 7,
     "auto_batch": true
   }
 }
-
-
