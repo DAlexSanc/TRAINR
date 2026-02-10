@@ -303,7 +303,7 @@ class MainWindow(QMainWindow):
         if hasattr(self, "process") and self.process.state() != QProcess.NotRunning:
             self.log_box.appendPlainText("A process is already running.")
             return
-        
+
         if not self.check_yolo_available():
             self.log_box.appendPlainText(
                 "ERROR: YOLO CLI not found. Please run the Heavy Installer first."
@@ -330,22 +330,26 @@ class MainWindow(QMainWindow):
             9: "yolov8x-seg.pt",
         }
 
+        idx = self.model_combobox.currentIndex()
+        model_name = model_map[idx]
 
-        model = model_map[self.model_combobox.currentIndex()]
+        # 🔥 DETECT TASK TYPE FROM MODEL
+        if "-seg" in model_name:
+            task = "segment"
+        else:
+            task = "detect"
+
         imgsz = self.resolution_spinbox.value()
         epochs = self.epochs_spinbox.value()
         patience = self.patience_spinbox.value()
 
-        if self.auto_batch_checkbox.isChecked():
-            batch = -1
-        else:
-            batch = str(self.batch_spinbox.value())
+        batch = "-1" if self.auto_batch_checkbox.isChecked() else str(self.batch_spinbox.value())
 
         cmd = [
             str(YOLO_EXE),
-            "detect", "train",
+            f"{task}", "train",
             f"data={dataset}",
-            f"model={MODELS / model}",
+            f"model={MODELS / model_name}",
             f"imgsz={imgsz}",
             f"epochs={epochs}",
             f"batch={batch}",
@@ -356,15 +360,18 @@ class MainWindow(QMainWindow):
         ]
 
 
-
-        self.log_box.appendPlainText("Starting YOLO training...\n")
+        self.log_box.appendPlainText(f"\nStarting YOLO {task} training...\n")
         self.log_box.appendPlainText(" ".join(cmd) + "\n")
-        
+
         self.current_job = "train"
         self._run_process(cmd)
 
+
     def _run_process(self, cmd):
         self.process = QProcess(self)
+        self.process.errorOccurred.connect(
+            lambda e: self.log_box.appendPlainText(f"Process error: {e}")
+        )
         self.process.setProcessChannelMode(QProcess.MergedChannels)
 
         self.process.readyReadStandardOutput.connect(self._read_process_output)

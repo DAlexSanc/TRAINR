@@ -15,17 +15,17 @@ if is_frozen():
     HAILO_SCRIPT = APP_ROOT / "app" / "Scripts" / "HailoDetectionYolo.py"
 
 else:
-    # Dev mode (Visual Studio, python interface.py)
     APP_ROOT = Path(__file__).resolve().parents[1]
 
-    # Use *current* python environment
-    PYTHON = Path(sys.executable)
+    VENV = APP_ROOT / ".venv"
 
-    # Try to find yolo / labelme in PATH
-    YOLO_EXE = Path(shutil.which("yolo") or "")
-    LABELME = Path(shutil.which("labelme") or "")
+    PYTHON = VENV / "Scripts" / "python.exe"
+    YOLO_EXE = VENV / "Scripts" / "yolo.exe"
+    LABELME = VENV / "Scripts" / "labelme.exe"
+
     WSL_ROOT = "/home/swt-hailo/venv_hailo"
     HAILO_SCRIPT = APP_ROOT / "Scripts" / "HailoDetectionYolo.py"
+
 
 APP_DIR  = APP_ROOT / "app"
 MODELS  = APP_DIR / "Models"
