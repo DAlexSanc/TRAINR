@@ -1,5 +1,5 @@
 #define AppName "TRAINR"
-#define AppVersion "1.0.0"
+#define AppVersion "1.0.1"
 #define AppExe "interface.exe"
 #define AppIcon "SWAI.ico"
 

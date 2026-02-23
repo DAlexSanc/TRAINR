@@ -425,8 +425,7 @@ class MainWindow(QMainWindow):
 
     def launch_labelme(self):
         QProcess.startDetached(
-            str(PYTHON),
-            ["-m", "labelme"]
+            str(LABELME)
         )
 
 
