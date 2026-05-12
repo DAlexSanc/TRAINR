@@ -4,6 +4,7 @@ import subprocess
 from app_state import AppState
 from organizer import OrganizerWindow
 from exporter import Exporter
+from analyzer_ui import DatasetVisualizer 
 from paths import PYTHON, YOLO_EXE, LABELME, MODELS, CONFIG
 from PySide6.QtGui import QPalette, QColor, QFont
 from PySide6.QtCore import QSize, Qt, QProcess
@@ -152,10 +153,12 @@ class MainWindow(QMainWindow):
 
         self.open_labelme_btn = QPushButton("Open Labelme")
         self.organize_dataset_btn = QPushButton("Organize Dataset")
+        self.analyze_dataset_btn = QPushButton("Analyze Dataset")
         self.export_model_btn = QPushButton("Export Model")
 
         toolbar.addWidget(self.open_labelme_btn)
         toolbar.addWidget(self.organize_dataset_btn)
+        toolbar.addWidget(self.analyze_dataset_btn)
         toolbar.addWidget(self.export_model_btn)
 
     def _connect_signals(self):
@@ -170,6 +173,7 @@ class MainWindow(QMainWindow):
         self.open_labelme_btn.clicked.connect(self.launch_labelme)
         self.organize_dataset_btn.clicked.connect(self.open_organizer)
         self.export_model_btn.clicked.connect(self.export_model)
+        self.analyze_dataset_btn.clicked.connect(self.open_analyzer)
      
 
     def open_output_dialog(self):
@@ -207,6 +211,10 @@ class MainWindow(QMainWindow):
     def export_model(self):
         exporter = Exporter(app_state=self.state)
         exporter.exec()
+
+    def open_analyzer(self):
+        analyzer = DatasetVisualizer()
+        analyzer.exec()
     
     def load_state(self):
         state = self.state
@@ -410,7 +418,7 @@ class MainWindow(QMainWindow):
             "export",
             f"model={weights}",
             "format=onnx",
-            "opset=12",
+            "opset=11",
             "simplify=True",
         ]
 

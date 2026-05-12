@@ -178,7 +178,7 @@ class Exporter(QDialog):
         else:
             QMessageBox.critical(self, "Error", message)
 
-def get_random_images_from_yaml(yaml_path, count=5):
+def get_random_images_from_yaml(yaml_path, count=64):
     with open(yaml_path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
 
@@ -240,14 +240,14 @@ class ExportWorker(QObject):
         )
 
         # -------------------------
-        # Copy 5 random images (from YAML)
+        # Copy 64 random images (from YAML)
         # -------------------------
         self.log.emit("Copying calibration images...")
 
-        images = get_random_images_from_yaml(self.yaml_path, count=5)
+        images = get_random_images_from_yaml(self.yaml_path, count=64)
 
         for i, img in enumerate(images, 1):
-            self.log.emit(f"Copying image {i}/5: {img.name}")
+            self.log.emit(f"Copying image {i}/64: {img.name}")
             img_wsl = self.to_wsl_path(img)
             subprocess.run(
                 ["wsl", "cp", img_wsl, WSL_ROOT],

@@ -20,8 +20,8 @@ SolidCompression=yes
 
 [Files]
 Source: "App\interface.exe"; DestDir: "{app}\app"; Flags: ignoreversion
-Source: "Scripts\*"; DestDir: "{app}\app\Scripts"; Flags: recursesubdirs createallsubdirs
-Source: "Models\*"; DestDir: "{app}\app\Models"; Flags: recursesubdirs createallsubdirs
+;Source: "Scripts\*"; DestDir: "{app}\app\Scripts"; Flags: recursesubdirs createallsubdirs
+Source: "App\Models\*"; DestDir: "{app}\app\Models"; Flags: recursesubdirs createallsubdirs
 Source: "{#AppIcon}"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]

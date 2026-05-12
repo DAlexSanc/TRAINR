@@ -4,9 +4,9 @@
     "epochs": 150,
     "patience": 30,
     "batch_size": 16,
-    "dataset": "D:/SWT_RAWData/GoogleBoards/dataset/dataset.yaml",
-    "output": "D:/SWT_Models/Google",
-    "model": 6,
+    "dataset": "C:/Users/Diego/Documents/SWT_Dataset/Benchmark/YOLO_Dataset/dataset.yaml",
+    "output": "C:/Users/Diego/Documents/SWT_Models/Benchmark",
+    "model": 1,
     "auto_batch": true
   }
 }
