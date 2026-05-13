@@ -1,4 +1,5 @@
 from app_state import AppState
+from theme import dark_titlebar
 from paths import APP_DIR, SCRIPTS, PYTHON, WSL_ROOT, HAILO_SCRIPT
 from PySide6.QtGui import QPalette, QColor, QFont
 from PySide6.QtCore import QSize, Qt, QObject, Signal, QThread
@@ -36,6 +37,7 @@ class Exporter(QDialog):
         self.setWindowTitle("Model Exporter")
         self.app_state = app_state
         self.setMinimumSize(QSize(500, 300))
+        dark_titlebar(self)
 
         layout = QGridLayout()
         frame_top = QFrame()
@@ -456,9 +458,10 @@ class ExportWorker(QObject):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app_state = AppState("config,json")
-    font = QFont("Segoe UI", 11)  # Windows-safe
-    app.setFont(font)
-    QApplication.setStyle("Fusion")
+    #font = QFont("Segoe UI", 11)  # Windows-safe
+    #app.setFont(font)
+    #QApplication.setStyle("Fusion")
     window = Exporter(app_state)
     window.show()
+    dark_titlebar(window)
     sys.exit(app.exec())

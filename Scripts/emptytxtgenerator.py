@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from theme import dark_titlebar
 
 from PySide6.QtCore import Qt, QObject, QThread, Signal
 from PySide6.QtGui import QFont
@@ -107,6 +108,7 @@ class EmptyLabelsDialog(QDialog):
         self.setWindowTitle("Generate Empty Labels")
         self.setMinimumWidth(480)
         self.resize(50, 130)
+        dark_titlebar(self)
         self._build_ui()
 
     def _build_ui(self):
@@ -199,9 +201,10 @@ class EmptyLabelsDialog(QDialog):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    font = QFont("Segoe UI", 11)
-    app.setFont(font)
-    QApplication.setStyle("Fusion")
+    #font = QFont("Segoe UI", 11)
+    #app.setFont(font)
+    #QApplication.setStyle("Fusion")
     window = EmptyLabelsDialog()
     window.show()
+    dark_titlebar(window)
     sys.exit(app.exec())

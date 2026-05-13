@@ -5,6 +5,7 @@ from app_state import AppState
 from organizer import OrganizerWindow
 from exporter import Exporter
 from analyzer_ui import DatasetVisualizer 
+from theme import apply_theme, dark_titlebar
 from emptytxtgenerator import EmptyLabelsDialog
 from paths import PYTHON, YOLO_EXE, LABELME, MODELS, CONFIG
 from PySide6.QtGui import QPalette, QColor, QFont
@@ -447,12 +448,15 @@ class MainWindow(QMainWindow):
 
             
 app = QApplication(sys.argv)
-font = QFont("Segoe UI", 11)  # Windows-safe
-app.setFont(font)
-QApplication.setStyle("Fusion")
+#font = QFont("Segoe UI", 11)  # Windows-safe
+#app.setFont(font)
+#QApplication.setStyle("Fusion")
+apply_theme(app)
 state = AppState(str(CONFIG))
 
 window = MainWindow(state)
 window.show()
+dark_titlebar(window)
+
 
 app.exec()

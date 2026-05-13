@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from theme import dark_titlebar
 
 import matplotlib
 matplotlib.use("QtAgg")
@@ -157,6 +158,7 @@ class DatasetVisualizer(QDialog):
         self.setWindowTitle("Dataset Visualizer")
         self.setMinimumSize(560, 380)
         self.resize(720, 580)
+        dark_titlebar(self)
 
         self._build_ui()
 
@@ -387,9 +389,10 @@ class DatasetVisualizer(QDialog):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    font = QFont("Segoe UI", 11)
-    app.setFont(font)
-    QApplication.setStyle("Fusion")
+    #font = QFont("Segoe UI", 11)
+    #app.setFont(font)
+    #QApplication.setStyle("Fusion")
     window = DatasetVisualizer()
     window.show()
+    dark_titlebar(window)
     sys.exit(app.exec())

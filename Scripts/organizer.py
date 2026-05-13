@@ -1,5 +1,6 @@
 from app_state import AppState
 from paths import CONFIG
+from theme import dark_titlebar
 from PySide6.QtGui import QPalette, QColor, QFont
 from PySide6.QtCore import QSize, Qt, QObject, Signal, QThread
 from PySide6.QtWidgets import (
@@ -31,6 +32,7 @@ class OrganizerWindow(QDialog):
     def __init__(self, app_state: AppState):
         super().__init__()
         self.app_state = app_state
+        dark_titlebar(self)
         self.setWindowTitle("Dataset Organizer")
         self.setMinimumSize(QSize(500, 150))
 
@@ -392,9 +394,10 @@ class OrganizerWorker(QObject):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app_state = AppState(str(CONFIG))
-    font = QFont("Segoe UI", 11)  # Windows-safe
-    app.setFont(font)
-    QApplication.setStyle("Fusion")
+    #font = QFont("Segoe UI", 11)  # Windows-safe
+    #app.setFont(font)
+    #QApplication.setStyle("Fusion")
     window = OrganizerWindow(app_state)
     window.show()
+    dark_titlebar(window)
     sys.exit(app.exec())
