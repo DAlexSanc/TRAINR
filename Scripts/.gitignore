@@ -11,6 +11,8 @@ venv/
 .env/
 .venv/
 .vscode/
+.sixth
+
 
 # Installer outputs
 dist/
