@@ -21,6 +21,7 @@ build/
 # Python
 __pycache__/
 *.pyc
+*.npy
 
 # OS junk
 .DS_Store
