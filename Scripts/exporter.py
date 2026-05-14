@@ -37,7 +37,6 @@ class Exporter(QDialog):
         self.setWindowTitle("Model Exporter")
         self.app_state = app_state
         self.setMinimumSize(QSize(500, 300))
-        dark_titlebar(self)
 
         layout = QGridLayout()
         frame_top = QFrame()

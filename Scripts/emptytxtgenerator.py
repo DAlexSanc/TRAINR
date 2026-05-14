@@ -108,7 +108,6 @@ class EmptyLabelsDialog(QDialog):
         self.setWindowTitle("Generate Empty Labels")
         self.setMinimumWidth(480)
         self.resize(50, 130)
-        dark_titlebar(self)
         self._build_ui()
 
     def _build_ui(self):

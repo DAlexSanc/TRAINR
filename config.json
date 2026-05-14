@@ -7,6 +7,13 @@
     "dataset": "C:/Users/Diego/Documents/SWT_Dataset/Benchmark/YOLO_Dataset/dataset.yaml",
     "output": "C:/Users/Diego/Documents/SWT_Models/Benchmark",
     "model": 1,
-    "auto_batch": true
+    "auto_batch": true,
+    "workers": 1,
+    "hsv_h": 0.049999999999999996,
+    "hsv_s": 0.6499999999999999,
+    "weight_decay": 0.00010000000000000003,
+    "label_smoothing": 0.009999999999999997,
+    "dropout": 0.05000000000000002,
+    "cos_lr": false
   }
 }

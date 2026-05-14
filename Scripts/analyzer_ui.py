@@ -158,7 +158,6 @@ class DatasetVisualizer(QDialog):
         self.setWindowTitle("Dataset Visualizer")
         self.setMinimumSize(560, 380)
         self.resize(720, 580)
-        dark_titlebar(self)
 
         self._build_ui()
 

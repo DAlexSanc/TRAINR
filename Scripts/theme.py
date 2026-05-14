@@ -1,389 +1,387 @@
 """
-theme.py
---------
-TRAINR dark theme.
-
-Usage
------
-    from theme import apply_theme
-    app = QApplication(sys.argv)
-    apply_theme(app)
+theme.py  —  TRAINR
+Two palettes: "dark" (default) and "light" (silver / off-white / burnt-orange).
 """
-
+from __future__ import annotations
 from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QColor
 
-# ── Palette ───────────────────────────────────────────────────────────────────
-BG        = "#1a1a1a"   # window background
-SURFACE   = "#232323"   # frames / cards
-SURFACE2  = "#2a2a2a"   # inputs, combos, spinboxes
-BORDER    = "#333333"   # subtle borders
-ACCENT    = "#378ADD"   # primary blue
-ACCENT_H  = "#4a9be8"   # accent hover
-ACCENT_P  = "#2a6fbb"   # accent pressed
-TEXT      = "#e8e8e8"   # primary text
-TEXT_DIM  = "#888888"   # placeholder / labels
-DANGER    = "#c0392b"   # destructive actions (future use)
-SUCCESS   = "#1d9e75"   # success (future use)
+# ── Dark palette ──────────────────────────────────────────────────────────────
+_D = dict(
+    BG        = "#1A1A1A",
+    SURFACE   = "#222222",
+    SURFACE2  = "#2A2A2A",
+    SURFACE3  = "#323232",
+    BORDER    = "#333333",
+    BORDER_S  = "#404040",
+    ACCENT    = "#378ADD",
+    ACCENT_H  = "#4A9BE8",
+    ACCENT_P  = "#2A6FBB",
+    TEXT      = "#E8E8E8",
+    TEXT_2    = "#AAAAAA",
+    TEXT_3    = "#666666",
+    LOG_BG    = "#111111",
+    LOG_TEXT  = "#C8C8C8",
+    SCROLLH   = "#404040",
+    SCROLLHH  = "#555555",
+    STATUS_BG = "#378ADD",
+    STATUS_FG = "#FFFFFF",
+    SEP       = "#333333",
+)
 
-QSS = f"""
-/* ── Base ─────────────────────────────────────────────────────────────────── */
+# ── Light palette — silver / warm-white / burnt-orange ────────────────────────
+_L = dict(
+    BG        = "#F0EEE9",   # warm off-white page
+    SURFACE   = "#F8F7F4",   # panel / sidebar background
+    SURFACE2  = "#ECEAE5",   # input fields, cards
+    SURFACE3  = "#E2DFDA",   # pressed / deeper inset
+    BORDER    = "#D8D4CC",   # default border
+    BORDER_S  = "#C4BFB5",   # strong border
+    ACCENT    = "#C95F1A",   # burnt orange — used sparingly
+    ACCENT_H  = "#E06B1F",
+    ACCENT_P  = "#A84A12",
+    TEXT      = "#252320",   # warm near-black
+    TEXT_2    = "#706B63",   # secondary
+    TEXT_3    = "#A39E96",   # muted / placeholders
+    LOG_BG    = "#181715",   # log stays dark
+    LOG_TEXT  = "#C8C4BC",
+    SCROLLH   = "#C0BBB2",
+    SCROLLHH  = "#ABA59C",
+    STATUS_BG = "#C95F1A",   # accent status bar
+    STATUS_FG = "#FFFFFF",
+    SEP       = "#D0CBC2",
+)
 
+
+def _qss(p: dict) -> str:
+    return f"""
+/* ── Base ── */
 QMainWindow, QDialog {{
-    background: {BG};
-    color: {TEXT};
+    background: {p['BG']};
+    color: {p['TEXT']};
 }}
-
 QWidget {{
-    background: {BG};
-    color: {TEXT};
+    background: {p['BG']};
+    color: {p['TEXT']};
     font-family: "Segoe UI";
-    font-size: 11pt;
-}}
-
-/* ── Frames / Cards ───────────────────────────────────────────────────────── */
-
-QFrame[frameShape="4"],
-QFrame[frameShape="6"] {{
-    background: {SURFACE};
-    border: 1px solid {BORDER};
-    border-radius: 6px;
-}}
-
-/* ── Toolbar ──────────────────────────────────────────────────────────────── */
-
-QToolBar {{
-    background: {SURFACE};
-    border-bottom: 1px solid {BORDER};
-    padding: 4px 6px;
-    spacing: 4px;
-}}
-
-QToolBar QPushButton {{
-    background: {SURFACE2};
-    color: {TEXT};
-    border: 1px solid {BORDER};
-    border-radius: 5px;
-    padding: 4px 12px;
     font-size: 10pt;
 }}
 
-QToolBar QPushButton:hover  {{ background: #303030; border-color: {ACCENT}; }}
-QToolBar QPushButton:pressed {{ background: {ACCENT_P}; color: #fff; }}
-
-/* ── Buttons ──────────────────────────────────────────────────────────────── */
-
-QPushButton {{
-    background: {SURFACE2};
-    color: {TEXT};
-    border: 1px solid {BORDER};
+/* ── Frames used as cards ── */
+QFrame[frameShape="4"],
+QFrame[frameShape="6"] {{
+    background: {p['SURFACE']};
+    border: 1px solid {p['BORDER']};
     border-radius: 5px;
-    padding: 5px 14px;
-    min-height: 22px;
 }}
 
-QPushButton:hover   {{ background: #303030; border-color: {ACCENT}; color: #fff; }}
-QPushButton:pressed {{ background: {ACCENT_P}; border-color: {ACCENT_P}; color: #fff; }}
-QPushButton:disabled {{ background: {SURFACE}; color: {TEXT_DIM}; border-color: {BORDER}; }}
+/* ── QGroupBox ── */
+QGroupBox {{
+    background: {p['SURFACE']};
+    border: 1px solid {p['BORDER']};
+    border-radius: 5px;
+    margin-top: 12px;
+    padding-top: 4px;
+}}
+QGroupBox::title {{
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 10px;
+    padding: 0 4px;
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: {p['TEXT_3']};
+}}
 
-/* Primary action button — add property primary="true" or just target by name */
-QPushButton#primaryBtn,
-QPushButton[text="Start Training"],
-QPushButton[text="Organize Dataset"],
-QPushButton[text="Analyze Dataset"],
-QPushButton[text="Generate Empty Labels"] {{
-    background: {ACCENT};
+/* ── QPushButton — default ── */
+QPushButton {{
+    background: {p['SURFACE2']};
+    color: {p['TEXT']};
+    border: 1px solid {p['BORDER_S']};
+    border-radius: 4px;
+    padding: 4px 12px;
+    min-height: 24px;
+    font-size: 10pt;
+}}
+QPushButton:hover   {{ background: {p['SURFACE3']}; border-color: {p['ACCENT']}; }}
+QPushButton:pressed {{ background: {p['ACCENT_P']}; color: #fff; border-color: {p['ACCENT_P']}; }}
+QPushButton:disabled {{ color: {p['TEXT_3']}; border-color: {p['BORDER']}; background: {p['SURFACE']}; }}
+
+/* Primary — objectName="primaryBtn" */
+QPushButton#primaryBtn {{
+    background: {p['ACCENT']};
     color: #fff;
     border: none;
     font-weight: 600;
-}}
-
-QPushButton#primaryBtn:hover,
-QPushButton[text="Start Training"]:hover,
-QPushButton[text="Organize Dataset"]:hover,
-QPushButton[text="Analyze Dataset"]:hover,
-QPushButton[text="Generate Empty Labels"]:hover {{
-    background: {ACCENT_H};
-}}
-
-QPushButton#primaryBtn:pressed,
-QPushButton[text="Start Training"]:pressed,
-QPushButton[text="Organize Dataset"]:pressed,
-QPushButton[text="Analyze Dataset"]:pressed,
-QPushButton[text="Generate Empty Labels"]:pressed {{
-    background: {ACCENT_P};
-}}
-
-/* ── Inputs ───────────────────────────────────────────────────────────────── */
-
-QLineEdit, QPlainTextEdit, QTextEdit {{
-    background: {SURFACE2};
-    color: {TEXT};
-    border: 1px solid {BORDER};
-    border-radius: 4px;
-    padding: 4px 6px;
-    selection-background-color: {ACCENT};
-}}
-
-QLineEdit:focus, QPlainTextEdit:focus, QTextEdit:focus {{
-    border-color: {ACCENT};
-}}
-
-QLineEdit:read-only {{
-    color: {TEXT_DIM};
-}}
-
-QLineEdit::placeholder {{ color: {TEXT_DIM}; }}
-
-/* Log box — terminal feel */
-QPlainTextEdit {{
-    font-family: "Consolas", "Courier New", monospace;
     font-size: 10pt;
-    background: #111111;
-    color: #c8c8c8;
-    border-color: #222;
+    letter-spacing: 0.04em;
+}}
+QPushButton#primaryBtn:hover   {{ background: {p['ACCENT_H']}; }}
+QPushButton#primaryBtn:pressed {{ background: {p['ACCENT_P']}; }}
+QPushButton#primaryBtn:disabled {{ background: {p['BORDER']}; color: {p['TEXT_3']}; }}
+
+/* Icon-only toolbar buttons — objectName="iconBtn" */
+QPushButton#iconBtn {{
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 3px;
+    min-height: 0;
+    min-width: 0;
+    color: {p['TEXT_2']};
+    font-size: 15px;
+}}
+QPushButton#iconBtn:hover   {{ background: {p['SURFACE2']}; border-color: {p['BORDER']}; color: {p['TEXT']}; }}
+QPushButton#iconBtn:pressed {{ background: {p['SURFACE3']}; }}
+
+/* Plain text link buttons — objectName="linkBtn" */
+QPushButton#linkBtn {{
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 1px 0;
+    min-height: 0;
+    color: {p['TEXT_3']};
+    font-size: 9pt;
+}}
+QPushButton#linkBtn:hover {{ color: {p['ACCENT']}; background: transparent; }}
+
+/* ── QLineEdit ── */
+QLineEdit {{
+    background: {p['SURFACE2']};
+    color: {p['TEXT']};
+    border: 1px solid {p['BORDER_S']};
+    border-radius: 4px;
+    padding: 4px 7px;
+    selection-background-color: {p['ACCENT']};
+    font-size: 10pt;
+}}
+QLineEdit:focus     {{ border-color: {p['ACCENT']}; }}
+QLineEdit:read-only {{ color: {p['TEXT_2']}; background: {p['SURFACE']}; }}
+
+/* ── QPlainTextEdit — log ── */
+QPlainTextEdit {{
+    background: {p['LOG_BG']};
+    color: {p['LOG_TEXT']};
+    border: none;
+    border-radius: 0;
+    padding: 6px 8px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 9.5pt;
+    selection-background-color: {p['ACCENT']};
 }}
 
-/* ── ComboBox ─────────────────────────────────────────────────────────────── */
-
+/* ── QComboBox ── */
 QComboBox {{
-    background: {SURFACE2};
-    color: {TEXT};
-    border: 1px solid {BORDER};
+    background: {p['SURFACE2']};
+    color: {p['TEXT']};
+    border: 1px solid {p['BORDER_S']};
     border-radius: 4px;
     padding: 4px 8px;
-    min-height: 22px;
+    min-height: 24px;
 }}
-
-QComboBox:focus  {{ border-color: {ACCENT}; }}
-QComboBox:hover  {{ border-color: #555; }}
-
-QComboBox::drop-down {{
-    border: none;
-    width: 22px;
-}}
-
+QComboBox:focus {{ border-color: {p['ACCENT']}; }}
+QComboBox::drop-down {{ border: none; width: 20px; }}
 QComboBox::down-arrow {{
-    image: none;
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
-    border-top: 6px solid {TEXT_DIM};
-    width: 0;
-    height: 0;
-    margin-right: 6px;
+    border-top: 5px solid {p['TEXT_3']};
+    width: 0; height: 0; margin-right: 6px;
 }}
-
 QComboBox QAbstractItemView {{
-    background: {SURFACE2};
-    color: {TEXT};
-    border: 1px solid {BORDER};
-    selection-background-color: {ACCENT};
+    background: {p['SURFACE2']};
+    color: {p['TEXT']};
+    border: 1px solid {p['BORDER_S']};
+    selection-background-color: {p['ACCENT']};
     outline: none;
 }}
 
-/* ── SpinBox ──────────────────────────────────────────────────────────────── */
-
-QSpinBox {{
-    background: {SURFACE2};
-    color: {TEXT};
-    border: 1px solid {BORDER};
+/* ── QSpinBox / QDoubleSpinBox ── */
+QSpinBox, QDoubleSpinBox {{
+    background: {p['SURFACE2']};
+    color: {p['TEXT']};
+    border: 1px solid {p['BORDER_S']};
     border-radius: 4px;
-    padding: 4px 6px;
-    min-height: 22px;
+    padding: 3px 6px;
+    min-height: 24px;
 }}
-
-QSpinBox:focus {{ border-color: {ACCENT}; }}
-
-QSpinBox::up-button, QSpinBox::down-button {{
-    background: {SURFACE};
+QSpinBox:focus, QDoubleSpinBox:focus {{ border-color: {p['ACCENT']}; }}
+QSpinBox::up-button, QSpinBox::down-button,
+QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {{
+    background: {p['SURFACE3']};
     border: none;
-    width: 18px;
-}}
-
-QSpinBox::up-button:hover, QSpinBox::down-button:hover {{
-    background: {ACCENT};
-}}
-
-QSpinBox::up-arrow {{
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-bottom: 5px solid {TEXT_DIM};
-    width: 0; height: 0;
-}}
-
-QSpinBox::down-arrow {{
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid {TEXT_DIM};
-    width: 0; height: 0;
-}}
-
-/* ── CheckBox ─────────────────────────────────────────────────────────────── */
-
-QCheckBox {{
-    color: {TEXT};
-    spacing: 6px;
-}}
-
-QCheckBox::indicator {{
     width: 16px;
-    height: 16px;
-    border: 1px solid {BORDER};
+}}
+QSpinBox::up-button:hover, QSpinBox::down-button:hover,
+QDoubleSpinBox::up-button:hover, QDoubleSpinBox::down-button:hover {{
+    background: {p['ACCENT']};
+}}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{
+    border-left: 3px solid transparent; border-right: 3px solid transparent;
+    border-bottom: 4px solid {p['TEXT_3']}; width: 0; height: 0;
+}}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{
+    border-left: 3px solid transparent; border-right: 3px solid transparent;
+    border-top: 4px solid {p['TEXT_3']}; width: 0; height: 0;
+}}
+
+/* ── QCheckBox ── */
+QCheckBox {{
+    color: {p['TEXT']};
+    spacing: 6px;
+    background: transparent;
+    font-size: 10pt;
+}}
+QCheckBox::indicator {{
+    width: 14px; height: 14px;
+    border: 1px solid {p['BORDER_S']};
     border-radius: 3px;
-    background: {SURFACE2};
+    background: {p['SURFACE2']};
 }}
+QCheckBox::indicator:hover   {{ border-color: {p['ACCENT']}; }}
+QCheckBox::indicator:checked {{ background: {p['ACCENT']}; border-color: {p['ACCENT']}; }}
 
-QCheckBox::indicator:hover   {{ border-color: {ACCENT}; }}
-QCheckBox::indicator:checked {{
-    background: {ACCENT};
-    border-color: {ACCENT};
-    image: none;
-}}
-
-/* Checkmark via border trick */
-QCheckBox::indicator:checked {{
-    background: {ACCENT};
-    border-color: {ACCENT};
-}}
-
-/* ── Slider ───────────────────────────────────────────────────────────────── */
-
+/* ── QSlider ── */
 QSlider::groove:horizontal {{
-    height: 4px;
-    background: {BORDER};
-    border-radius: 2px;
+    height: 3px; background: {p['BORDER_S']}; border-radius: 2px;
 }}
-
 QSlider::sub-page:horizontal {{
-    background: {ACCENT};
-    border-radius: 2px;
+    background: {p['ACCENT']}; border-radius: 2px;
 }}
-
 QSlider::handle:horizontal {{
-    background: {ACCENT};
-    border: 2px solid {BG};
-    width: 14px;
-    height: 14px;
-    margin: -5px 0;
-    border-radius: 7px;
+    background: {p['ACCENT']}; border: 2px solid {p['BG']};
+    width: 13px; height: 13px; margin: -5px 0; border-radius: 7px;
 }}
+QSlider::handle:horizontal:hover {{ background: {p['ACCENT_H']}; }}
 
-QSlider::handle:horizontal:hover {{
-    background: {ACCENT_H};
-}}
-
-/* ── Labels ───────────────────────────────────────────────────────────────── */
-
+/* ── QLabel ── */
 QLabel {{
-    color: {TEXT};
+    color: {p['TEXT']};
     background: transparent;
 }}
 
-/* ── ScrollBar ────────────────────────────────────────────────────────────── */
-
+/* ── QScrollBar ── */
 QScrollBar:vertical {{
-    background: {BG};
-    width: 8px;
-    margin: 0;
+    background: transparent; width: 7px; margin: 0;
 }}
-
 QScrollBar::handle:vertical {{
-    background: #444;
-    border-radius: 4px;
-    min-height: 24px;
+    background: {p['SCROLLH']}; border-radius: 3px; min-height: 20px;
 }}
-
-QScrollBar::handle:vertical:hover {{ background: #555; }}
+QScrollBar::handle:vertical:hover {{ background: {p['SCROLLHH']}; }}
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
-
 QScrollBar:horizontal {{
-    background: {BG};
-    height: 8px;
+    background: transparent; height: 7px;
 }}
-
 QScrollBar::handle:horizontal {{
-    background: #444;
-    border-radius: 4px;
-    min-width: 24px;
+    background: {p['SCROLLH']}; border-radius: 3px; min-width: 20px;
 }}
-
-QScrollBar::handle:horizontal:hover {{ background: #555; }}
+QScrollBar::handle:horizontal:hover {{ background: {p['SCROLLHH']}; }}
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0; }}
 
-/* ── MessageBox ───────────────────────────────────────────────────────────── */
-
-QMessageBox {{
-    background: {SURFACE};
+/* ── QListWidget (sidebar model list) ── */
+QListWidget {{
+    background: transparent;
+    border: none;
+    outline: none;
+}}
+QListWidget::item {{
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: {p['TEXT_2']};
+    font-size: 9.5pt;
+}}
+QListWidget::item:hover    {{ background: {p['SURFACE2']}; color: {p['TEXT']}; }}
+QListWidget::item:selected {{
+    background: rgba(201,95,26,0.12);
+    color: {p['ACCENT']};
 }}
 
+/* ── QMessageBox ── */
+QMessageBox {{ background: {p['SURFACE']}; }}
 QMessageBox QLabel {{ background: transparent; }}
 
-/* ── Tab Widget (future-proof) ────────────────────────────────────────────── */
+/* ── QStatusBar ── */
+QStatusBar {{
+    background: {p['STATUS_BG']};
+    color: {p['STATUS_FG']};
+    font-size: 9pt;
+}}
+QStatusBar::item {{ border: none; }}
 
+/* ── QTabBar (used in dialogs) ── */
 QTabWidget::pane {{
-    border: 1px solid {BORDER};
-    border-radius: 6px;
-    background: {BG};
+    border: 1px solid {p['BORDER']};
+    background: {p['BG']};
+    border-radius: 5px;
 }}
-
 QTabBar::tab {{
-    background: {SURFACE};
-    color: {TEXT_DIM};
-    border: 1px solid {BORDER};
+    background: {p['SURFACE']};
+    color: {p['TEXT_3']};
+    border: 1px solid {p['BORDER']};
     border-bottom: none;
-    padding: 6px 16px;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
+    padding: 5px 14px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
 }}
-
 QTabBar::tab:selected {{
-    background: {BG};
-    color: {TEXT};
-    border-bottom: 2px solid {ACCENT};
+    background: {p['BG']};
+    color: {p['TEXT']};
+    border-bottom: 2px solid {p['ACCENT']};
 }}
+QTabBar::tab:hover:!selected {{ color: {p['TEXT_2']}; }}
 
-QTabBar::tab:hover:!selected {{ color: {TEXT}; }}
+/* ── QSplitter ── */
+QSplitter::handle {{
+    background: {p['BORDER']};
+}}
+QSplitter::handle:horizontal {{ width: 1px; }}
+QSplitter::handle:vertical   {{ height: 1px; }}
 """
 
 
-def apply_theme(app: QApplication) -> None:
-    """Call once after QApplication is created, before any window is shown."""
+_CURRENT: str = "dark"
+_DARK_QSS  = _qss(_D)
+_LIGHT_QSS = _qss(_L)
+
+# Expose palette dicts so other widgets can read colours at runtime
+PALETTES = {"dark": _D, "light": _L}
+
+
+def apply_theme(app: QApplication, theme: str = "dark") -> None:
+    global _CURRENT
+    _CURRENT = theme
     app.setStyle("Fusion")
-    app.setStyleSheet(QSS)
+    app.setStyleSheet(_DARK_QSS if theme == "dark" else _LIGHT_QSS)
 
 
-def dark_titlebar(window) -> None:
-    """
-    Tell Windows to render the native title bar in dark mode.
-    Works on Windows 10 (build 1809+) and Windows 11.
-    Safe no-op on any other platform.
+def current_theme() -> str:
+    return _CURRENT
 
-    Call this AFTER window.show():
-        window.show()
-        dark_titlebar(window)
-    """
+
+def palette() -> dict:
+    """Return the active palette dict so widgets can read colours."""
+    return PALETTES[_CURRENT]
+
+
+# ── Title-bar DWM helpers ─────────────────────────────────────────────────────
+
+def _dwm(window, dark: bool) -> None:
     try:
-        import ctypes
-        import sys
-        if sys.platform != "win32":
+        import ctypes, sys as _sys
+        if _sys.platform != "win32":
             return
-
-        hwnd = int(window.winId())
-        DWMWA_USE_IMMERSIVE_DARK_MODE = 20   # Windows 11 / 10 21H1+
-        DWMWA_USE_IMMERSIVE_DARK_MODE_OLD = 19  # Windows 10 older builds
-
-        value = ctypes.c_int(1)
-        size  = ctypes.sizeof(value)
-
-        dwmapi = ctypes.windll.dwmapi
-        # Try the modern attribute first, fall back to the older one
-        result = dwmapi.DwmSetWindowAttribute(
-            hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE,
-            ctypes.byref(value), size,
-        )
-        if result != 0:
-            dwmapi.DwmSetWindowAttribute(
-                hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_OLD,
-                ctypes.byref(value), size,
-            )
+        hwnd  = int(window.winId())
+        val   = ctypes.c_int(1 if dark else 0)
+        sz    = ctypes.sizeof(val)
+        dwm   = ctypes.windll.dwmapi
+        if dwm.DwmSetWindowAttribute(hwnd, 20, ctypes.byref(val), sz) != 0:
+            dwm.DwmSetWindowAttribute(hwnd, 19, ctypes.byref(val), sz)
     except Exception:
-        pass  # never crash the app over a cosmetic call
+        pass
+
+
+def dark_titlebar(w)  -> None: _dwm(w, True)
+def light_titlebar(w) -> None: _dwm(w, False)
+def auto_titlebar(w)  -> None: _dwm(w, _CURRENT == "dark")

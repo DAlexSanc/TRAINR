@@ -32,7 +32,6 @@ class OrganizerWindow(QDialog):
     def __init__(self, app_state: AppState):
         super().__init__()
         self.app_state = app_state
-        dark_titlebar(self)
         self.setWindowTitle("Dataset Organizer")
         self.setMinimumSize(QSize(500, 150))
 
