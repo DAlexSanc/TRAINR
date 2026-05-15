@@ -36,6 +36,11 @@ from organizer import OrganizerWindow
 from exporter import Exporter
 from analyzer_ui import DatasetVisualizer
 from emptytxtgenerator import EmptyLabelsDialog
+from class_renamer import ClassRenamerDialog
+from tab_curves    import CurvesTab
+from tab_augpreview import AugPreviewTab
+from tab_onnx      import OnnxTab
+from dialogs_extra import ResumeTrainingDialog, RunComparisonDialog
 from paths import YOLO_EXE, LABELME, MODELS, CONFIG
 from theme import apply_theme, auto_titlebar, current_theme, palette
 
@@ -221,9 +226,9 @@ class TabBar(QWidget):
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
             btn.clicked.connect(lambda _, idx=i: self._select(idx))
             self._btns.append(btn)
-            lay.addWidget(btn)
+            lay.addWidget(btn, stretch=1)
 
-        lay.addStretch()
+        #lay.addStretch()
         self._apply_styles()
         self._btns[0].setChecked(True)
 
@@ -262,154 +267,6 @@ class TabBar(QWidget):
 
     def current(self) -> int:
         return self._current
-
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Placeholder dialogs
-# ──────────────────────────────────────────────────────────────────────────────
-
-class ResumeTrainingDialog(QDialog):
-    def __init__(self, app_state=None, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Resume Training")
-        self.setMinimumWidth(520)
-        self.resize(560, 220)
-        self._build()
-        auto_titlebar(self)
-
-    def _build(self):
-        lay = QVBoxLayout(self)
-        lay.setSpacing(10)
-        lay.setContentsMargins(14, 14, 14, 14)
-
-        frame = QFrame()
-        frame.setFrameShape(QFrame.Shape.StyledPanel)
-        g = QGridLayout(frame)
-        g.setSpacing(8)
-        g.setContentsMargins(10, 10, 10, 10)
-        g.setColumnStretch(1, 1)
-
-        def _row(r, lbl, attr, ph, is_dir=False):
-            g.addWidget(QLabel(lbl), r, 0)
-            le = QLineEdit()
-            le.setPlaceholderText(ph)
-            le.setReadOnly(True)
-            setattr(self, attr, le)
-            g.addWidget(le, r, 1)
-            b = QPushButton("Browse")
-            b.setFixedWidth(76)
-            if is_dir:
-                b.clicked.connect(lambda _, a=attr: self._browse_dir(a))
-            else:
-                b.clicked.connect(lambda _, a=attr, x=ph: self._browse_file(a, x))
-            g.addWidget(b, r, 2)
-
-        _row(0, "Checkpoint (.pt):", "_ckpt", "Path to best.pt or last.pt")
-        _row(1, "Dataset YAML:", "_yaml", "Path to dataset.yaml")
-        _row(2, "Output folder:", "_out", "Output directory", is_dir=True)
-
-        g.addWidget(QLabel("Additional epochs:"), 3, 0)
-        self._ep = QSpinBox()
-        self._ep.setRange(1, 1000)
-        self._ep.setValue(50)
-        g.addWidget(self._ep, 3, 1)
-
-        lay.addWidget(frame)
-        btn = QPushButton("Resume Training")
-        btn.setObjectName("primaryBtn")
-        btn.clicked.connect(lambda: QMessageBox.information(
-            self, "Coming Soon", "Backend will be connected in a future update."))
-        lay.addWidget(btn)
-
-    def _browse_file(self, attr, hint):
-        f, _ = QFileDialog.getOpenFileName(self, f"Select {hint}", "", "All Files (*.*)")
-        if f:
-            getattr(self, attr).setText(f)
-
-    def _browse_dir(self, attr):
-        d = QFileDialog.getExistingDirectory(self, "Select Folder")
-        if d:
-            getattr(self, attr).setText(d)
-
-
-class RunComparisonDialog(QDialog):
-    def __init__(self, app_state=None, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Run Comparison")
-        self.setMinimumSize(700, 480)
-        self.resize(820, 560)
-        self._runs: list[str] = []
-        self._build()
-        auto_titlebar(self)
-
-    def _build(self):
-        lay = QVBoxLayout(self)
-        lay.setSpacing(10)
-        lay.setContentsMargins(14, 14, 14, 14)
-
-        frame = QFrame()
-        frame.setFrameShape(QFrame.Shape.StyledPanel)
-        inner = QVBoxLayout(frame)
-        inner.setSpacing(6)
-        inner.setContentsMargins(10, 10, 10, 10)
-        inner.addWidget(QLabel("Add results.csv files to compare:"))
-
-        row = QHBoxLayout()
-        self._csv_in = QLineEdit()
-        self._csv_in.setPlaceholderText("results.csv path")
-        self._csv_in.setReadOnly(True)
-        row.addWidget(self._csv_in, stretch=1)
-        b1 = QPushButton("Browse")
-        b1.setFixedWidth(76)
-        b1.clicked.connect(self._browse)
-        row.addWidget(b1)
-        b2 = QPushButton("Add Run")
-        b2.setFixedWidth(76)
-        b2.clicked.connect(self._add)
-        row.addWidget(b2)
-        inner.addLayout(row)
-
-        self._run_list = QPlainTextEdit()
-        self._run_list.setReadOnly(True)
-        self._run_list.setMaximumHeight(70)
-        self._run_list.setPlaceholderText("No runs added yet…")
-        inner.addWidget(self._run_list)
-        lay.addWidget(frame)
-
-        btn_row = QHBoxLayout()
-        btn_row.addStretch()
-        clr = QPushButton("Clear All")
-        clr.clicked.connect(self._clear)
-        btn_row.addWidget(clr)
-        cmp = QPushButton("Compare")
-        cmp.setObjectName("primaryBtn")
-        cmp.clicked.connect(lambda: QMessageBox.information(
-            self, "Coming Soon", "Backend will be connected in a future update."))
-        btn_row.addWidget(cmp)
-        lay.addLayout(btn_row)
-
-        ph = QLabel("Add runs and click Compare to overlay curves")
-        ph.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        ph.setStyleSheet("color: #888; font-size: 11pt;")
-        ph.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        lay.addWidget(ph, stretch=1)
-
-    def _browse(self):
-        f, _ = QFileDialog.getOpenFileName(self, "Select results.csv", "",
-                                           "CSV Files (*.csv);;All Files (*.*)")
-        if f:
-            self._csv_in.setText(f)
-
-    def _add(self):
-        p = self._csv_in.text().strip()
-        if p and p not in self._runs:
-            self._runs.append(p)
-            self._run_list.appendPlainText(f"  {len(self._runs)}. {p}")
-        self._csv_in.clear()
-
-    def _clear(self):
-        self._runs.clear()
-        self._run_list.clear()
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -537,11 +394,11 @@ class Sidebar(QWidget):
         links_col.setContentsMargins(0, 0, 0, 0)
 
         self.analyze_btn     = _link_btn("Analyze")
-        self.health_btn      = _link_btn("Health")
+        self.class_rename_btn      = _link_btn("Rename Classes")
         self.organize_btn    = _link_btn("Organize")
         self.emptylabels_btn = _link_btn("Empty labels")
 
-        for i, btn in enumerate([self.analyze_btn, self.health_btn,
+        for i, btn in enumerate([self.analyze_btn, self.class_rename_btn,
                                   self.organize_btn, self.emptylabels_btn]):
             links_col.addWidget(btn)
             if i < 3:
@@ -768,216 +625,14 @@ class TrainTab(QScrollArea):
         self._rec_lbl.setText(f"{rec:.3f}")
         self._run_info.setText(info)
 
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Curves tab
-# ──────────────────────────────────────────────────────────────────────────────
-
-class CurvesTab(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        lay = QVBoxLayout(self)
-        lay.setContentsMargins(12, 12, 12, 12)
-        lay.setSpacing(8)
-
-        frame = QFrame()
-        frame.setFrameShape(QFrame.Shape.StyledPanel)
-        row = QHBoxLayout(frame)
-        row.setContentsMargins(10, 8, 10, 8)
-        row.setSpacing(8)
-        row.addWidget(QLabel("results.csv:"))
-        self._csv_in = QLineEdit()
-        self._csv_in.setPlaceholderText("Select a YOLO results.csv — or finish a training run")
-        self._csv_in.setReadOnly(True)
-        row.addWidget(self._csv_in, stretch=1)
-        b = QPushButton("Browse")
-        b.setFixedWidth(76)
-        b.clicked.connect(self._browse)
-        row.addWidget(b)
-        load = QPushButton("Load")
-        load.setObjectName("primaryBtn")
-        load.setFixedWidth(64)
-        load.clicked.connect(lambda: QMessageBox.information(
-            self, "Coming Soon", "Curve rendering will be connected in a future update."))
-        row.addWidget(load)
-        lay.addWidget(frame)
-
-        ph = QLabel("Load a results.csv to display training curves")
-        ph.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        ph.setStyleSheet("color: #888; font-size: 12pt;")
-        ph.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        lay.addWidget(ph, stretch=1)
-
-    def _browse(self):
-        f, _ = QFileDialog.getOpenFileName(self, "Select results.csv", "",
-                                           "CSV (*.csv);;All Files (*.*)")
-        if f:
-            self._csv_in.setText(f)
-
-    def load_csv(self, path: str):
-        self._csv_in.setText(path)
-
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Health tab
-# ──────────────────────────────────────────────────────────────────────────────
-
-class HealthTab(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        lay = QVBoxLayout(self)
-        lay.setContentsMargins(12, 12, 12, 12)
-        lay.setSpacing(8)
-
-        frame = QFrame()
-        frame.setFrameShape(QFrame.Shape.StyledPanel)
-        g = QGridLayout(frame)
-        g.setContentsMargins(10, 8, 10, 8)
-        g.setSpacing(8)
-        g.setColumnStretch(1, 1)
-        g.addWidget(QLabel("Dataset folder:"), 0, 0)
-        self._folder = QLineEdit()
-        self._folder.setPlaceholderText("Root dataset folder to inspect")
-        self._folder.setReadOnly(True)
-        g.addWidget(self._folder, 0, 1)
-        b = QPushButton("Browse")
-        b.setFixedWidth(76)
-        b.clicked.connect(self._browse)
-        g.addWidget(b, 0, 2)
-        lay.addWidget(frame)
-
-        run_btn = QPushButton("Run Health Check")
-        run_btn.setObjectName("primaryBtn")
-        run_btn.clicked.connect(lambda: QMessageBox.information(
-            self, "Coming Soon", "Health check backend will be connected in a future update."))
-        lay.addWidget(run_btn)
-
-        self._results = QPlainTextEdit()
-        self._results.setReadOnly(True)
-        self._results.setPlaceholderText(
-            "Health check results will appear here…\n\n"
-            "Checks include:\n"
-            "  •  Classes with fewer than 30 samples\n"
-            "  •  Images missing label files\n"
-            "  •  Label files with out-of-range coordinates\n"
-            "  •  Severe class imbalance (>10× ratio)\n"
-            "  •  Duplicate filenames across splits"
-        )
-        lay.addWidget(self._results, stretch=1)
-
-    def _browse(self):
-        d = QFileDialog.getExistingDirectory(self, "Select Dataset Folder")
-        if d:
-            self._folder.setText(d)
-
-
-# ──────────────────────────────────────────────────────────────────────────────
-# ONNX / HEF tab
-# ──────────────────────────────────────────────────────────────────────────────
-
-class OnnxTab(QWidget):
-    def __init__(self, app_state=None, parent=None):
-        super().__init__(parent)
-        self._state = app_state
-        lay = QVBoxLayout(self)
-        lay.setContentsMargins(12, 12, 12, 12)
-        lay.setSpacing(8)
-
-        src = QFrame()
-        src.setFrameShape(QFrame.Shape.StyledPanel)
-        sg = QGridLayout(src)
-        sg.setContentsMargins(10, 10, 10, 10)
-        sg.setSpacing(8)
-        sg.setColumnStretch(1, 1)
-        src_title = QLabel("Source")
-        src_title.setStyleSheet("font-size: 9.5pt; font-weight: 600;")
-        sg.addWidget(src_title, 0, 0, 1, 3)
-
-        def _path_row(grid, row, label, attr, ph, browse_fn):
-            grid.addWidget(QLabel(label), row, 0)
-            le = QLineEdit()
-            le.setPlaceholderText(ph)
-            le.setReadOnly(True)
-            setattr(self, attr, le)
-            grid.addWidget(le, row, 1)
-            b = QPushButton("…")
-            b.setObjectName("iconBtn")
-            b.setFixedSize(26, 26)
-            b.clicked.connect(browse_fn)
-            grid.addWidget(b, row, 2)
-
-        _path_row(sg, 1, "ONNX file:", "onnx_input", "train/weights/best.onnx",
-                  lambda: self._browse_file("onnx_input", "ONNX (*.onnx)"))
-        _path_row(sg, 2, "Dataset YAML:", "yaml_input", "dataset.yaml",
-                  lambda: self._browse_file("yaml_input", "YAML (*.yaml *.yml)"))
-        _path_row(sg, 3, "Output folder:", "out_input", "export output",
-                  lambda: self._browse_dir("out_input"))
-        lay.addWidget(src)
-
-        prm = QFrame()
-        prm.setFrameShape(QFrame.Shape.StyledPanel)
-        pg = QGridLayout(prm)
-        pg.setContentsMargins(10, 10, 10, 10)
-        pg.setSpacing(8)
-        pg.setColumnStretch(1, 1)
-        prm_title = QLabel("Parameters")
-        prm_title.setStyleSheet("font-size: 9.5pt; font-weight: 600;")
-        pg.addWidget(prm_title, 0, 0, 1, 2)
-        pg.addWidget(QLabel("Resolution:"), 1, 0)
-        self.resolution_input = QSpinBox()
-        self.resolution_input.setRange(160, 2048)
-        self.resolution_input.setValue(640)
-        pg.addWidget(self.resolution_input, 1, 1)
-        pg.addWidget(QLabel("Model name:"), 2, 0)
-        self.model_name_input = QLineEdit()
-        self.model_name_input.setPlaceholderText("e.g. SWT_Benchmark_v3")
-        pg.addWidget(self.model_name_input, 2, 1)
-        lay.addWidget(prm)
-
-        export_btn = QPushButton("Export Model")
-        export_btn.setObjectName("primaryBtn")
-        export_btn.clicked.connect(self._open_exporter)
-        lay.addWidget(export_btn)
-
-        self.log_box = QPlainTextEdit()
-        self.log_box.setReadOnly(True)
-        self.log_box.setMaximumBlockCount(2000)
-        self.log_box.setPlaceholderText("Export logs will appear here…")
-        lay.addWidget(self.log_box, stretch=1)
-
-    def _browse_file(self, attr: str, filt: str):
-        f, _ = QFileDialog.getOpenFileName(self, "Select file", "",
-                                           f"{filt};;All Files (*.*)")
-        if f:
-            getattr(self, attr).setText(f)
-
-    def _browse_dir(self, attr: str):
-        d = QFileDialog.getExistingDirectory(self, "Select folder")
-        if d:
-            getattr(self, attr).setText(d)
-
-    def _open_exporter(self):
-        dlg = Exporter(app_state=self._state)
-        if self.onnx_input.text():
-            dlg.onnx_path_input.setText(self.onnx_input.text())
-        if self.yaml_input.text():
-            dlg.yaml_file_input.setText(self.yaml_input.text())
-        if self.out_input.text():
-            dlg.output_input.setText(self.out_input.text())
-        dlg.resolution_input.setValue(self.resolution_input.value())
-        if self.model_name_input.text():
-            dlg.model_name_input.setText(self.model_name_input.text())
-        dlg.exec()
-
-
 # ──────────────────────────────────────────────────────────────────────────────
 # Title bar
 # ──────────────────────────────────────────────────────────────────────────────
 
 class TitleBar(QWidget):
     labelme_clicked     = Signal()
-    organize_clicked    = Signal()
-    emptylabels_clicked = Signal()
+    language_clicked    = Signal()
+    reset_clicked       = Signal()
     resume_clicked      = Signal()
     compare_clicked     = Signal()
     theme_toggled       = Signal()
@@ -1001,18 +656,18 @@ class TitleBar(QWidget):
         lay.addStretch()
 
         self._lm_btn  = _icon_btn("🏷",  "Open LabelMe")
-        self._org_btn = _icon_btn("📁",  "Organize dataset")
-        self._emp_btn = _icon_btn("📄",  "Generate empty labels")
+        self._lang_btn  = _icon_btn("🌐", "Language")
+        self._reset_btn = _icon_btn("↺",  "Reset parameters to defaults")
         self._res_btn = _icon_btn("▶▶", "Resume training")
         self._cmp_btn = _icon_btn("📊", "Compare runs")
 
         self._lm_btn.clicked.connect(self.labelme_clicked)
-        self._org_btn.clicked.connect(self.organize_clicked)
-        self._emp_btn.clicked.connect(self.emptylabels_clicked)
+        self._lang_btn.clicked.connect(self.language_clicked)
+        self._reset_btn.clicked.connect(self.reset_clicked)
         self._res_btn.clicked.connect(self.resume_clicked)
         self._cmp_btn.clicked.connect(self.compare_clicked)
 
-        for btn in [self._lm_btn, self._org_btn, self._emp_btn,
+        for btn in [self._lm_btn, self._lang_btn, self._reset_btn,
                     self._res_btn, self._cmp_btn]:
             lay.addWidget(btn)
 
@@ -1293,7 +948,7 @@ class MainWindow(QMainWindow):
         main_col_lay.setContentsMargins(0, 0, 0, 0)
         main_col_lay.setSpacing(0)
 
-        self.tab_bar = TabBar(["Train", "Curves", "Health", "ONNX / HEF"])
+        self.tab_bar = TabBar(["Train", "Curves", "Aug. Preview", "ONNX / HEF"])
         main_col_lay.addWidget(self.tab_bar)
 
         tb_sep = QFrame()
@@ -1304,11 +959,11 @@ class MainWindow(QMainWindow):
         self.pages = QStackedWidget()
         self.train_tab  = TrainTab()
         self.curves_tab = CurvesTab()
-        self.health_tab = HealthTab()
+        self.aug_preview_tab = AugPreviewTab(train_tab=self.train_tab)
         self.onnx_tab   = OnnxTab(app_state=self.state)
         self.pages.addWidget(self.train_tab)
         self.pages.addWidget(self.curves_tab)
-        self.pages.addWidget(self.health_tab)
+        self.pages.addWidget(self.aug_preview_tab)
         self.pages.addWidget(self.onnx_tab)
         main_col_lay.addWidget(self.pages, stretch=1)
 
@@ -1361,19 +1016,16 @@ class MainWindow(QMainWindow):
 
         self.sidebar.dataset_button.clicked.connect(self._browse_yaml)
         self.sidebar.output_button.clicked.connect(self._browse_output)
-
-        self.sidebar.analyze_btn.clicked.connect(lambda: DatasetVisualizer().exec())
-        self.sidebar.health_btn.clicked.connect(
-            lambda: (self.pages.setCurrentIndex(2), self.tab_bar._select(2)))
-        self.sidebar.organize_btn.clicked.connect(
-            lambda: OrganizerWindow(app_state=self.state).exec())
+        self.sidebar.organize_btn.clicked.connect(lambda: OrganizerWindow(app_state=self.state).exec())
         self.sidebar.emptylabels_btn.clicked.connect(lambda: EmptyLabelsDialog().exec())
-
+        self.sidebar.analyze_btn.clicked.connect(lambda: DatasetVisualizer().exec())
+        self.sidebar.class_rename_btn.clicked.connect(
+            lambda: ClassRenamerDialog(app_state=self.state, parent=self).exec())
+        
+        self.titlebar.language_clicked.connect(self._open_language)
+        self.titlebar.reset_clicked.connect(self._reset_params)
         self.titlebar.labelme_clicked.connect(
             lambda: QProcess.startDetached(str(LABELME)))
-        self.titlebar.organize_clicked.connect(
-            lambda: OrganizerWindow(app_state=self.state).exec())
-        self.titlebar.emptylabels_clicked.connect(lambda: EmptyLabelsDialog().exec())
         self.titlebar.resume_clicked.connect(
             lambda: ResumeTrainingDialog(app_state=self.state, parent=self).exec())
         self.titlebar.compare_clicked.connect(
@@ -1381,6 +1033,7 @@ class MainWindow(QMainWindow):
         self.titlebar.theme_toggled.connect(self._toggle_theme)
 
         self.status_strip.start_clicked.connect(self.start_training)
+        self.curves_tab.last_run_ready.connect(self.train_tab.update_last_run)
 
     # ──────────────────────────────────────────────────────────────────────────
     # Theme
@@ -1393,6 +1046,8 @@ class MainWindow(QMainWindow):
         self.titlebar.set_theme_label(new)
         self.tab_bar.refresh_styles()
         self.status_strip.refresh_color()
+        if self.state:
+            self.state.set("ui.theme", new)
 
     # ──────────────────────────────────────────────────────────────────────────
     # File dialogs
@@ -1415,13 +1070,29 @@ class MainWindow(QMainWindow):
     # ──────────────────────────────────────────────────────────────────────────
     # State persistence
     # ──────────────────────────────────────────────────────────────────────────
-
     def load_state(self):
         s = self.state
         t = self.train_tab
+        o = self.onnx_tab
+
+        # ── UI state ──────────────────────────────────────────────────────────
+        saved_theme = s.get("ui.theme", "dark")
+        apply_theme(QApplication.instance(), saved_theme)
+        auto_titlebar(self)
+        self.titlebar.set_theme_label(saved_theme)
+        self.tab_bar.refresh_styles()
+        self.status_strip.refresh_color()
+
+        saved_tab = s.get("ui.active_tab", 0)
+        self.pages.setCurrentIndex(saved_tab)
+        self.tab_bar._select(saved_tab)
+
+        # ── Sidebar ───────────────────────────────────────────────────────────
         self.sidebar.dataset_linedit.setText(s.get("trainr.dataset", ""))
         self.sidebar.output_linedit.setText(s.get("trainr.output", ""))
         self.sidebar.set_model_index(s.get("trainr.model", 1))
+
+        # ── Schedule ──────────────────────────────────────────────────────────
         t.resolution_spinbox.setValue(s.get("trainr.resolution", 640))
         t.epochs_spinbox.setValue(s.get("trainr.epochs", 100))
         t.patience_spinbox.setValue(s.get("trainr.patience", 30))
@@ -1429,11 +1100,15 @@ class MainWindow(QMainWindow):
         t.workers_spinbox.setValue(s.get("trainr.workers", 8))
         t.batch_spinbox.setEnabled(not s.get("trainr.auto_batch", True))
         t.auto_batch_checkbox.setChecked(s.get("trainr.auto_batch", True))
+
+        # ── Regularization ────────────────────────────────────────────────────
         t.dropout_spinbox.setValue(s.get("trainr.dropout", 0.0))
         t.weight_decay_spinbox.setValue(s.get("trainr.weight_decay", 0.0005))
         t.label_smoothing_spinbox.setValue(s.get("trainr.label_smoothing", 0.0))
         t.warmup_epochs_spinbox.setValue(s.get("trainr.warmup_epochs", 3.0))
         t.cos_lr_checkbox.setChecked(s.get("trainr.cos_lr", False))
+
+        # ── Augmentation ──────────────────────────────────────────────────────
         t.mosaic_spinbox.setValue(s.get("trainr.mosaic", 1.0))
         t.mixup_spinbox.setValue(s.get("trainr.mixup", 0.0))
         t.copy_paste_spinbox.setValue(s.get("trainr.copy_paste", 0.0))
@@ -1444,24 +1119,43 @@ class MainWindow(QMainWindow):
         t.hsv_s_spinbox.setValue(s.get("trainr.hsv_s", 0.7))
         t.hsv_v_spinbox.setValue(s.get("trainr.hsv_v", 0.4))
 
+        # ── ONNX / HEF tab ────────────────────────────────────────────────────
+        o.onnx_input.setText(s.get("onnx.onnx_path", ""))
+        o.yaml_input.setText(s.get("onnx.yaml_path", ""))
+        o.out_input.setText(s.get("onnx.output_folder", ""))
+        o.resolution_input.setValue(s.get("onnx.resolution", 640))
+        o.model_name_input.setText(s.get("onnx.model_name", ""))
+
     def bind_state(self):
         s = self.state
         t = self.train_tab
+        o = self.onnx_tab
         sb = self.sidebar
+
+        # ── Sidebar ───────────────────────────────────────────────────────────
         sb.dataset_linedit.textChanged.connect(lambda v: s.set("trainr.dataset", v))
         sb.output_linedit.textChanged.connect(lambda v: s.set("trainr.output", v))
         sb.model_changed.connect(lambda v: s.set("trainr.model", v))
+
+        # ── Tab switching ─────────────────────────────────────────────────────
+        self.tab_bar.tab_changed.connect(lambda v: s.set("ui.active_tab", v))
+
+        # ── Schedule ──────────────────────────────────────────────────────────
         t.resolution_spinbox.valueChanged.connect(lambda v: s.set("trainr.resolution", v))
         t.epochs_spinbox.valueChanged.connect(lambda v: s.set("trainr.epochs", v))
         t.patience_spinbox.valueChanged.connect(lambda v: s.set("trainr.patience", v))
         t.batch_spinbox.valueChanged.connect(lambda v: s.set("trainr.batch_size", v))
         t.auto_batch_checkbox.toggled.connect(lambda v: s.set("trainr.auto_batch", v))
         t.workers_spinbox.valueChanged.connect(lambda v: s.set("trainr.workers", v))
+
+        # ── Regularization ────────────────────────────────────────────────────
         t.dropout_spinbox.valueChanged.connect(lambda v: s.set("trainr.dropout", v))
         t.weight_decay_spinbox.valueChanged.connect(lambda v: s.set("trainr.weight_decay", v))
         t.label_smoothing_spinbox.valueChanged.connect(lambda v: s.set("trainr.label_smoothing", v))
         t.warmup_epochs_spinbox.valueChanged.connect(lambda v: s.set("trainr.warmup_epochs", v))
         t.cos_lr_checkbox.toggled.connect(lambda v: s.set("trainr.cos_lr", v))
+
+        # ── Augmentation ──────────────────────────────────────────────────────
         t.mosaic_spinbox.valueChanged.connect(lambda v: s.set("trainr.mosaic", v))
         t.mixup_spinbox.valueChanged.connect(lambda v: s.set("trainr.mixup", v))
         t.copy_paste_spinbox.valueChanged.connect(lambda v: s.set("trainr.copy_paste", v))
@@ -1472,6 +1166,12 @@ class MainWindow(QMainWindow):
         t.hsv_s_spinbox.valueChanged.connect(lambda v: s.set("trainr.hsv_s", v))
         t.hsv_v_spinbox.valueChanged.connect(lambda v: s.set("trainr.hsv_v", v))
 
+        # ── ONNX / HEF tab ────────────────────────────────────────────────────
+        o.onnx_input.textChanged.connect(lambda v: s.set("onnx.onnx_path", v))
+        o.yaml_input.textChanged.connect(lambda v: s.set("onnx.yaml_path", v))
+        o.out_input.textChanged.connect(lambda v: s.set("onnx.output_folder", v))
+        o.resolution_input.valueChanged.connect(lambda v: s.set("onnx.resolution", v))
+        o.model_name_input.textChanged.connect(lambda v: s.set("onnx.model_name", v))
     # ──────────────────────────────────────────────────────────────────────────
     # Training
     # ──────────────────────────────────────────────────────────────────────────
@@ -1607,14 +1307,40 @@ class MainWindow(QMainWindow):
         self.log_box.appendPlainText("\nExporting ONNX…\n")
         self._run_process(cmd)
 
+    def _open_language(self):
+        QMessageBox.information(self, "Language",
+            "Additional languages coming soon.\nCurrently: English")
+
+    def _reset_params(self):
+        t = self.train_tab
+        # Regularization
+        t.dropout_spinbox.setValue(0.0)
+        t.weight_decay_spinbox.setValue(0.0005)
+        t.label_smoothing_spinbox.setValue(0.0)
+        t.warmup_epochs_spinbox.setValue(3.0)
+        t.cos_lr_checkbox.setChecked(False)
+        # Augmentation
+        t.mosaic_spinbox.setValue(1.0)
+        t.mixup_spinbox.setValue(0.0)
+        t.copy_paste_spinbox.setValue(0.0)
+        t.degrees_spinbox.setValue(0.0)
+        t.fliplr_spinbox.setValue(0.5)
+        t.flipud_spinbox.setValue(0.0)
+        t.hsv_h_spinbox.setValue(0.015)
+        t.hsv_s_spinbox.setValue(0.7)
+        t.hsv_v_spinbox.setValue(0.4)
+        self.log_box.appendPlainText("Regularization and augmentation parameters reset to defaults.")
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Entry point
 # ──────────────────────────────────────────────────────────────────────────────
 
 app   = QApplication(sys.argv)
-apply_theme(app, "dark")
 state = AppState(str(CONFIG))
+
+# Apply saved theme before window construction so nothing flickers
+apply_theme(app, state.get("ui.theme", "dark"))
 
 window = MainWindow(state)
 window.show()

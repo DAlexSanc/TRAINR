@@ -39,7 +39,7 @@ class OrganizerWindow(QDialog):
         frame = QFrame()
         main_layout = QVBoxLayout()
         
-        self.path_label = QLabel("Dataset Folder Path:")
+        self.path_label = QLabel("Input Folder Path:")
         self.path_input = QLineEdit()
         self.browse_button = QPushButton("Browse")  
 

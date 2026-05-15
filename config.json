@@ -9,11 +9,20 @@
     "model": 1,
     "auto_batch": true,
     "workers": 1,
-    "hsv_h": 0.049999999999999996,
-    "hsv_s": 0.6499999999999999,
-    "weight_decay": 0.00010000000000000003,
-    "label_smoothing": 0.009999999999999997,
-    "dropout": 0.05000000000000002,
-    "cos_lr": false
+    "hsv_h": 0.04,
+    "hsv_s": 0.7,
+    "weight_decay": 0.0005,
+    "label_smoothing": 0.0,
+    "dropout": 0.0,
+    "cos_lr": false,
+    "mosaic": 1.0,
+    "mixup": 0.4,
+    "copy_paste": 0.5,
+    "degrees": 35.0,
+    "flipud": 0.30000000000000004
+  },
+  "ui": {
+    "theme": "light",
+    "active_tab": 0
   }
 }
