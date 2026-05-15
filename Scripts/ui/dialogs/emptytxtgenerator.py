@@ -15,7 +15,8 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from theme import dark_titlebar
+from theme import auto_titlebar
+from core.app_state import AppState
 
 from PySide6.QtCore import Qt, QObject, QThread, Signal
 from PySide6.QtGui import QFont
@@ -109,6 +110,7 @@ class EmptyLabelsDialog(QDialog):
         self.setMinimumWidth(480)
         self.resize(50, 130)
         self._build_ui()
+        auto_titlebar(self)
 
     def _build_ui(self):
         main_layout = QVBoxLayout(self)
@@ -205,5 +207,5 @@ if __name__ == "__main__":
     #QApplication.setStyle("Fusion")
     window = EmptyLabelsDialog()
     window.show()
-    dark_titlebar(window)
+    auto_titlebar(window)
     sys.exit(app.exec())

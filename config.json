@@ -9,17 +9,17 @@
     "model": 1,
     "auto_batch": true,
     "workers": 1,
-    "hsv_h": 0.04,
+    "hsv_h": 0.015,
     "hsv_s": 0.7,
     "weight_decay": 0.0005,
     "label_smoothing": 0.0,
     "dropout": 0.0,
     "cos_lr": false,
     "mosaic": 1.0,
-    "mixup": 0.4,
-    "copy_paste": 0.5,
-    "degrees": 35.0,
-    "flipud": 0.30000000000000004
+    "mixup": 0.0,
+    "copy_paste": 0.0,
+    "degrees": 0.0,
+    "flipud": 0.0
   },
   "ui": {
     "theme": "light",

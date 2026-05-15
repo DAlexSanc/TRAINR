@@ -29,7 +29,7 @@ from PySide6.QtWidgets import (
 )
 
 from theme import auto_titlebar, palette
-from tab_curves import load_results_csv
+from ui.tabs.tab_curves import load_results_csv
 from paths import YOLO_EXE
 
 

@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
     QPushButton, QSpinBox, QVBoxLayout, QWidget,
 )
 
-from exporter import ExportWorker
+from core.export_worker import ExportWorker
 
 
 class OnnxTab(QWidget):

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from theme import dark_titlebar
+from theme import auto_titlebar
 
 import matplotlib
 matplotlib.use("QtAgg")
@@ -29,7 +29,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from dataset_analyzer import DatasetStats, analyze_dataset
+from core.dataset_analyzer import DatasetStats, analyze_dataset
 
 BAR_COLORS = [
     "#378ADD", "#1D9E75", "#D85A30", "#BA7517",
@@ -154,6 +154,7 @@ class DatasetVisualizer(QDialog):
         self.app_state = app_state
         self._worker: _AnalyzeWorker | None = None
         self._last_dir: Path | None = None
+        auto_titlebar(self)
 
         self.setWindowTitle("Dataset Visualizer")
         self.setMinimumSize(560, 380)
@@ -284,7 +285,7 @@ class DatasetVisualizer(QDialog):
         self._analyze_btn.setEnabled(True)
 
         # Try to auto-detect class names from yaml and show them as a hint
-        from dataset_analyzer import _find_yaml_names
+        from core.dataset_analyzer import _find_yaml_names
         names = _find_yaml_names(Path(folder))
         if names:
             self._detected_label.setText(f"Auto-detected: {', '.join(names)}")
@@ -393,5 +394,5 @@ if __name__ == "__main__":
     #QApplication.setStyle("Fusion")
     window = DatasetVisualizer()
     window.show()
-    dark_titlebar(window)
+    auto_titlebar(window)
     sys.exit(app.exec())

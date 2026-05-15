@@ -1,6 +1,6 @@
-from app_state import AppState
+from core.app_state import AppState
 from paths import CONFIG
-from theme import dark_titlebar
+from theme import auto_titlebar
 from PySide6.QtGui import QPalette, QColor, QFont
 from PySide6.QtCore import QSize, Qt, QObject, Signal, QThread
 from PySide6.QtWidgets import (
@@ -34,12 +34,13 @@ class OrganizerWindow(QDialog):
         self.app_state = app_state
         self.setWindowTitle("Dataset Organizer")
         self.setMinimumSize(QSize(500, 150))
+        auto_titlebar(self) 
 
         layout = QGridLayout()
         frame = QFrame()
         main_layout = QVBoxLayout()
         
-        self.path_label = QLabel("Input Folder Path:")
+        self.path_label = QLabel("Dataset Folder Path:")
         self.path_input = QLineEdit()
         self.browse_button = QPushButton("Browse")  
 
@@ -398,5 +399,5 @@ if __name__ == "__main__":
     #QApplication.setStyle("Fusion")
     window = OrganizerWindow(app_state)
     window.show()
-    dark_titlebar(window)
+    auto_titlebar(window)
     sys.exit(app.exec())
