@@ -8,7 +8,7 @@
     "output": "C:/Users/Diego/Documents/SWT_Models/Benchmark",
     "model": 1,
     "auto_batch": true,
-    "workers": 1,
+    "workers": 12,
     "hsv_h": 0.015,
     "hsv_s": 0.7,
     "weight_decay": 0.0005,
@@ -19,10 +19,17 @@
     "mixup": 0.0,
     "copy_paste": 0.0,
     "degrees": 0.0,
-    "flipud": 0.0
+    "flipud": 0.0,
+    "fliplr": 2.7755575615628914e-17
   },
   "ui": {
     "theme": "light",
-    "active_tab": 0
+    "active_tab": 3
+  },
+  "onnx": {
+    "model_name": "Benchmark",
+    "onnx_path": "C:/Users/Diego/Documents/SWT_Models/Benchmark/train/weights/best.onnx",
+    "yaml_path": "C:/Users/Diego/Documents/SWT_Dataset/Benchmark/YOLO_Dataset/dataset.yaml",
+    "output_folder": "C:/Users/Diego/Documents/SWT_Models/Benchmark/train/weights"
   }
 }
