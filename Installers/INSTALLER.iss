@@ -23,7 +23,7 @@ Source: "Scripts\main.py";               DestDir: "{app}\Scripts"; Flags: ignore
 Source: "Scripts\theme.py";              DestDir: "{app}\Scripts"; Flags: ignoreversion
 Source: "Scripts\paths.py";              DestDir: "{app}\Scripts"; Flags: ignoreversion
 Source: "Scripts\HailoDetectionYolo.py"; DestDir: "{app}\Scripts"; Flags: ignoreversion
-Source: "Scripts\core\extractor.py";          DestDir: "{app}\Scripts"; Flags: ignoreversion
+Source: "Scripts\extractor.py";          DestDir: "{app}\Scripts"; Flags: ignoreversion
 Source: "Scripts\core\*"; DestDir: "{app}\Scripts\core"; Flags: recursesubdirs createallsubdirs ignoreversion
 Source: "Scripts\ui\*";   DestDir: "{app}\Scripts\ui";   Flags: recursesubdirs createallsubdirs ignoreversion
 

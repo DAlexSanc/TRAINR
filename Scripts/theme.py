@@ -29,27 +29,27 @@ _D = dict(
     SEP       = "#333333",
 )
 
-# ── Light palette — silver / warm-white / burnt-orange ────────────────────────
+# ── Light palette — white / cool grey / blue ──────────────────────────────────
 _L = dict(
-    BG        = "#F0EEE9",   # warm off-white page
-    SURFACE   = "#F8F7F4",   # panel / sidebar background
-    SURFACE2  = "#ECEAE5",   # input fields, cards
-    SURFACE3  = "#E2DFDA",   # pressed / deeper inset
-    BORDER    = "#D8D4CC",   # default border
-    BORDER_S  = "#C4BFB5",   # strong border
-    ACCENT    = "#C95F1A",   # burnt orange — used sparingly
-    ACCENT_H  = "#E06B1F",
-    ACCENT_P  = "#A84A12",
-    TEXT      = "#252320",   # warm near-black
-    TEXT_2    = "#706B63",   # secondary
-    TEXT_3    = "#A39E96",   # muted / placeholders
-    LOG_BG    = "#181715",   # log stays dark
-    LOG_TEXT  = "#C8C4BC",
-    SCROLLH   = "#C0BBB2",
-    SCROLLHH  = "#ABA59C",
-    STATUS_BG = "#C95F1A",   # accent status bar
+    BG        = "#F5F5F7",   # Apple-style off-white page
+    SURFACE   = "#FFFFFF",   # pure white cards / panels
+    SURFACE2  = "#EEEEEF",   # input fields, list backgrounds
+    SURFACE3  = "#E3E3E8",   # pressed / deeper inset
+    BORDER    = "#DCDCE0",   # default border
+    BORDER_S  = "#C8C8CF",   # strong border
+    ACCENT    = "#378ADD",   # same blue as dark theme
+    ACCENT_H  = "#4A9BE8",
+    ACCENT_P  = "#2A6FBB",
+    TEXT      = "#1D1D1F",   # near-black
+    TEXT_2    = "#6E6E73",   # secondary grey
+    TEXT_3    = "#AEAEB2",   # muted / placeholders
+    LOG_BG    = "#1A1A1A",   # log stays dark
+    LOG_TEXT  = "#C8C8C8",
+    SCROLLH   = "#C0C0C8",
+    SCROLLHH  = "#A8A8B4",
+    STATUS_BG = "#378ADD",   # blue status bar matches dark theme
     STATUS_FG = "#FFFFFF",
-    SEP       = "#D0CBC2",
+    SEP       = "#DCDCE0",
 )
 
 
@@ -294,7 +294,7 @@ QListWidget::item {{
 }}
 QListWidget::item:hover    {{ background: {p['SURFACE2']}; color: {p['TEXT']}; }}
 QListWidget::item:selected {{
-    background: rgba(201,95,26,0.12);
+    background: rgba(55,138,221,0.12);
     color: {p['ACCENT']};
 }}
 
