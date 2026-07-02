@@ -1,0 +1,63 @@
+# TRAINR large assets
+Models/
+models/
+*.pt
+*.onnx
+*.engine
+*.hef
+
+# Virtual environments
+venv/
+.env/
+.venv/
+.vscode/
+
+# Installer outputs
+dist/
+build/
+*.exe   
+*.spec
+
+# Python
+__pycache__/
+*.pyc
+*.npy
+
+# OS junk
+.DS_Store
+Thumbs.db
+*.log
+
+# ── Orin branch additions ──────────────────────────────────
+# Datasets & training data (left inside TRAINR/ because the
+# container only mounts this tree — must NOT be committed)
+SWT_Dataset/
+SWT_Models/
+datasets/
+dataset/
+**/YOLO_Dataset/
+**/images/
+**/labels/
+
+# Ultralytics / YOLO run outputs
+runs/
+train/
+train*/
+**/weights/
+results.csv
+events.out.tfevents.*
+
+# "Package for HEF" bundles
+*_hef_bundle/
+*_hef_bundle.zip
+*.zip
+
+# Extra model/export formats
+*.pb
+*.tflite
+
+# Local app state (absolute paths differ per machine/branch)
+config.json
+
+# Launcher log
+launch.log
