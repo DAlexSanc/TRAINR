@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore    import Qt, QProcess
+from PySide6.QtCore    import Qt, QProcess, QProcessEnvironment
 from PySide6.QtWidgets import (
     QApplication, QFileDialog, QFrame, QHBoxLayout,
     QLabel, QMainWindow, QMessageBox, QPlainTextEdit,
@@ -17,6 +17,28 @@ from PySide6.QtWidgets import (
 from core.app_state  import AppState
 from paths           import YOLO_EXE, LABELME, MODELS
 from theme           import apply_theme, auto_titlebar, current_theme
+
+
+def _child_env() -> QProcessEnvironment:
+    """Environment for spawned children (labelme, yolo).
+
+    Under `--user`, QProcess children do NOT reliably inherit the launcher's
+    env, so HOME/DISPLAY/XDG can be missing and the child dies silently with
+    no screen or no writable config dir. We start from the current process
+    env and guarantee the keys those tools need.
+    """
+    import os
+    env = QProcessEnvironment.systemEnvironment()
+    for key, default in (
+        ("HOME", "/tmp"),
+        ("DISPLAY", os.environ.get("DISPLAY", ":0")),
+        ("XDG_RUNTIME_DIR", "/tmp/runtime-root"),
+        ("XDG_CACHE_HOME", "/tmp/.cache"),
+        ("XDG_CONFIG_HOME", "/tmp/.config"),
+    ):
+        if not env.contains(key) or not env.value(key):
+            env.insert(key, os.environ.get(key, default))
+    return env
 
 from ui.widgets   import TabBar, hsep
 from ui.titlebar  import TitleBar, StatusStrip
@@ -162,8 +184,7 @@ class MainWindow(QMainWindow):
             lambda: EmptyLabelsDialog().exec())
 
         # Title bar
-        self.titlebar.labelme_clicked.connect(
-            lambda: QProcess.startDetached(str(LABELME)))
+        self.titlebar.labelme_clicked.connect(self._launch_labelme)
         self.titlebar.language_clicked.connect(self._open_language)
         self.titlebar.reset_clicked.connect(self._reset_params)
         self.titlebar.resume_clicked.connect(
@@ -285,10 +306,10 @@ class MainWindow(QMainWindow):
         t.hsv_s_spinbox.setValue(s.get("trainr.hsv_s", 0.7))
         t.hsv_v_spinbox.setValue(s.get("trainr.hsv_v", 0.4))
 
-        o.onnx_input.setText(s.get("onnx.onnx_path", ""))
-        o.yaml_input.setText(s.get("onnx.yaml_path", ""))
-        o.out_input.setText(s.get("onnx.output_folder", "/data/host"))
-        o.calib_count_input.setValue(s.get("onnx.calib_count", 64))
+        o.onnx_input.setText(s.get("onnx.onnx_input", ""))
+        o.yaml_input.setText(s.get("onnx.yaml_input", ""))
+        o.out_input.setText(s.get("onnx.out_input", "/data/host"))
+        #o.calib_input.setValue(s.get("onnx.calib_count", 640))
         o.model_name_input.setText(s.get("onnx.model_name", ""))
 
     def bind_state(self):
@@ -325,8 +346,8 @@ class MainWindow(QMainWindow):
 
         o.onnx_input.textChanged.connect(lambda v: s.set("onnx.onnx_path", v))
         o.yaml_input.textChanged.connect(lambda v: s.set("onnx.yaml_path", v))
-        o.out_input.textChanged.connect(lambda v: s.set("onnx.output_folder", v))
-        o.calib_count_input.valueChanged.connect(lambda v: s.set("onnx.calib_count", v))
+        o.out_input.textChanged.connect(lambda v: s.set("onnx.output_path", v))
+        o.calib_count_input.valueChanged.connect(lambda v: s.set("onnx.sample_count", v))
         o.model_name_input.textChanged.connect(lambda v: s.set("onnx.model_name", v))
 
     # ──────────────────────────────────────────────────────────────────────────
@@ -337,6 +358,7 @@ class MainWindow(QMainWindow):
         if not YOLO_EXE.exists():
             return False
         test = QProcess()
+        test.setProcessEnvironment(_child_env())
         test.start(str(YOLO_EXE), ["--version"])
         test.waitForFinished(3000)
         return test.exitCode() == 0
@@ -397,8 +419,19 @@ class MainWindow(QMainWindow):
         self.current_job = "train"
         self._run_process(cmd)
 
+    def _launch_labelme(self):
+        proc = QProcess(self)
+        proc.setProcessEnvironment(_child_env())
+        # startDetached on a configured QProcess carries the environment
+        proc.setProgram(str(LABELME))
+        if not proc.startDetached():
+            self.log_box.appendPlainText(
+                "Could not launch labelme. Check that it is installed and "
+                "that DISPLAY is set.")
+
     def _run_process(self, cmd: list[str]):
         self.process = QProcess(self)
+        self.process.setProcessEnvironment(_child_env())
         self.process.errorOccurred.connect(
             lambda e: self.log_box.appendPlainText(f"Process error: {e}"))
         self.process.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)

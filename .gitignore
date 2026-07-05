@@ -33,6 +33,7 @@ Thumbs.db
 # container only mounts this tree — must NOT be committed)
 SWT_Dataset/
 SWT_Models/
+SWT_Raw/
 datasets/
 dataset/
 **/YOLO_Dataset/
